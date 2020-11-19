@@ -1,0 +1,55 @@
+package com.atwzw.gateway.handler;
+
+import com.atwzw.commonutils.ResultCodeEnum;
+import org.springframework.boot.autoconfigure.web.ErrorProperties;
+import org.springframework.boot.autoconfigure.web.ResourceProperties;
+import org.springframework.boot.autoconfigure.web.reactive.error.DefaultErrorWebExceptionHandler;
+import org.springframework.boot.web.reactive.error.ErrorAttributes;
+import org.springframework.context.ApplicationContext;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.reactive.function.server.*;
+
+import java.util.HashMap;
+import java.util.Map;
+
+/**
+ * 自定义异常处理：异常时用JSON代替HTML异常信息
+ */
+public class JsonExceptionHandler extends DefaultErrorWebExceptionHandler {
+
+    public JsonExceptionHandler(ErrorAttributes errorAttributes, ResourceProperties resourceProperties,
+                                ErrorProperties errorProperties, ApplicationContext applicationContext) {
+        super(errorAttributes, resourceProperties, errorProperties, applicationContext);
+    }
+
+    /**
+     * 获取异常属性
+     */
+    @Override
+    protected Map<String, Object> getErrorAttributes(ServerRequest request, boolean includeStackTrace) {
+        Map<String, Object> map = new HashMap<>();
+        map.put("success", false);
+        map.put("code", ResultCodeEnum.CD205.getCode());
+        map.put("message", ResultCodeEnum.CD205.getMsg());
+        map.put("data", null);
+        return map;
+    }
+
+    /**
+     * 指定响应处理方法为 JSON 处理的方法
+     * @param errorAttributes
+     */
+    @Override
+    protected RouterFunction<ServerResponse> getRoutingFunction(ErrorAttributes errorAttributes) {
+        return RouterFunctions.route(RequestPredicates.all(), this::renderErrorResponse);
+    }
+
+    /**
+     * 根据 code 获取对应的 HttpStatus
+     * @param errorAttributes
+     */
+    @Override
+    protected int getHttpStatus(Map<String, Object> errorAttributes) {
+        return 200;
+    }
+}

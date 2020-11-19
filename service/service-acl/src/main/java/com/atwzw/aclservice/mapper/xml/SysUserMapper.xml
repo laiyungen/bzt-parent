@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.atwzw.aclservice.mapper.SysUserMapper">
+
+    <resultMap id="BaseResultMap" type="com.atwzw.servicebase.bean.SysUser">
+        <id column="id" jdbcType="BIGINT" property="id" />
+        <result column="user_type" jdbcType="TINYINT" property="userType" />
+        <result column="pid" jdbcType="BIGINT" property="pid" />
+        <result column="parent_name" jdbcType="VARCHAR" property="parentName" />
+        <result column="username" jdbcType="VARCHAR" property="username" />
+        <result column="alias_name" jdbcType="VARCHAR" property="aliasName" />
+        <result column="head_portrait_url" jdbcType="VARCHAR" property="headPortraitUrl" />
+        <result column="skin_colour" jdbcType="VARCHAR" property="skinColour" />
+        <result column="password" jdbcType="VARCHAR" property="password" />
+        <result column="linkman" jdbcType="VARCHAR" property="linkman" />
+        <result column="tel" jdbcType="VARCHAR" property="tel" />
+        <result column="addr" jdbcType="VARCHAR" property="addr" />
+        <result column="purchase_count" jdbcType="BIGINT" property="purchaseCount" />
+        <result column="stock_count" jdbcType="BIGINT" property="stockCount" />
+        <result column="wallet_balance" jdbcType="BIGINT" property="walletBalance" />
+        <result column="returnable_balance" jdbcType="BIGINT" property="returnableBalance" />
+        <result column="non_refundable_balance" jdbcType="BIGINT" property="nonRefundableBalance" />
+        <result column="is_deleted" jdbcType="TINYINT" property="isDeleted" />
+        <result column="gmt_create" jdbcType="DATE" property="gmtCreate" />
+        <result column="gmt_modified" jdbcType="DATE" property="gmtModified" />
+    </resultMap>
+    <sql id="Base_Column_List">
+        id, user_type, pid, parent_name, username, alias_name, head_portrait_url,
+        skin_colour, password, linkman, tel, addr,
+        purchase_count, stock_count, wallet_balance, returnable_balance,
+        non_refundable_balance, is_deleted, gmt_create, gmt_modified
+    </sql>
+
+    <!-- 根据条件分页查询用户信息 -->
+    <select id="selectSysUserListByCodition" parameterType="com.atwzw.aclservice.entity.vo.SysUserQueryVo" resultType="com.atwzw.aclservice.entity.dto.SysUserListDto">
+        select
+            id, pid, parent_name, username, alias_name, head_portrait_url, linkman, tel,
+            purchase_count, stock_count, is_deleted, gmt_create, gmt_modified
+        from
+            sys_user as bu
+        <trim prefix="WHERE" prefixOverrides="AND">
+            is_deleted != 1
+            <if test="sysUserQueryVo.username != null and sysUserQueryVo.username != ''">
+                AND bu.username LIKE CONCAT('%', #{sysUserQueryVo.username}, '%')
+            </if>
+            <if test="sysUserQueryVo.aliasName != null and sysUserQueryVo.aliasName != ''">
+                AND bu.login_no LIKE CONCAT('%', #{sysUserQueryVo.aliasName}, '%')
+            </if>
+            <if test="sysUserQueryVo.userIdList != null and sysUserQueryVo.userIdList.size > 0">
+                AND bu.id in
+                <foreach item="userId" index="index" collection="sysUserQueryVo.userIdList" open="(" separator="," close=")">
+                    #{userId}
+                </foreach>
+            </if>
+        </trim>
+        order by
+        gmt_create asc
+    </select>
+
+    <!-- 根据父级 id 获取对应的用户 id 和用户名集合 -->
+    <select id="selectChildrenUserIdListByPId" parameterType="java.lang.Long" resultType="java.lang.Long">
+        select
+          id
+        from
+          sys_user
+        where
+          pid = #{pid}
+    </select>
+
+    <!-- 根据父级用户 ID 获取直属下级用户集合 -->
+    <select id="batchSubUserTree" parameterType="java.lang.Long" resultType="com.atwzw.aclservice.entity.dto.SysUserTreeDto">
+        select
+            id as userId, alias_name as aliasName
+        from
+            sys_user
+        where
+            pid = #{pid}
+    </select>
+
+    <!-- 根据用户 ID 集合获取用户信息 -->
+    <select id="selectUserByUserIdList" parameterType="java.util.List" resultType="com.atwzw.aclservice.entity.vo.UserExportVo">
+        select
+            u.username, u.alias_name, u.parent_name, u.linkman, u.tel,
+            u.addr, u.purchase_count, u.stock_count
+        from
+            sys_user as u
+        <trim prefix="WHERE" prefixOverrides="AND">
+            <if test="userIdList != null and userIdList.size > 0">
+                u.id in
+                <foreach collection="userIdList" item="userId" index="index" open="(" separator="," close=")">
+                    #{userId}
+                </foreach>
+            </if>
+        </trim>
+    </select>
+
+</mapper>

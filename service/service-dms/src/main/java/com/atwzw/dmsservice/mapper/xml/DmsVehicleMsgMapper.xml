@@ -1,0 +1,135 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.atwzw.dmsservice.mapper.DmsVehicleMsgMapper">
+
+    <resultMap id="BaseResultMap" type="com.atwzw.dmsservice.entity.DmsVehicleMsg">
+        <id column="id" property="id" />
+        <result column="vehicle_model_id" property="vehicleModelId" />
+        <result column="vehicle_owner_tel" property="vehicleOwnerTel" />
+        <result column="emergency_contact" property="emergencyContact" />
+        <result column="emergency_contact_tel" property="emergencyContactTel" />
+        <result column="id_number" property="idNumber" />
+        <result column="plate_number" property="plateNumber" />
+        <result column="carframe_number" property="carframeNumber" />
+        <result column="vehicle_register_certificate" property="vehicleRegisterCertificate" />
+        <result column="purchase_date" property="purchaseDate" />
+        <result column="purpose_type" property="purposeType" />
+    </resultMap>
+
+    <!-- 新增一条设备车辆信息数据 -->
+    <insert id="insertDmsVehicleMsg" parameterType="com.atwzw.dmsservice.entity.DmsVehicleMsg" keyProperty="id" keyColumn="id">
+        insert into dms_vehicle_msg
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="vehicleModelId != null">
+                vehicle_model_id,
+            </if>
+            <if test="vehicleOwnerName != null">
+                vehicle_owner_name,
+            </if>
+            <if test="vehicleOwnerTel != null">
+                vehicle_owner_tel,
+            </if>
+            <if test="emergencyContact != null">
+                emergency_contact,
+            </if>
+            <if test="emergencyContactTel != null">
+                emergency_contact_tel,
+            </if>
+            <if test="idNumber != null">
+                id_number,
+            </if>
+            <if test="plateNumber != null">
+                plate_number,
+            </if>
+            <if test="carframeNumber != null">
+                carframe_number,
+            </if>
+            <if test="vehicleRegisterCertificate != null">
+                vehicle_register_certificate,
+            </if>
+            <if test="purchaseDate != null">
+                purchase_date,
+            </if>
+            <if test="purposeType != null">
+                purpose_type,
+            </if>
+            <if test="purchaseDate != null">
+                purchase_date,
+            </if>
+            <if test="isDeleted != null">
+                is_deleted,
+            </if>
+            <if test="gmtCreate != null">
+                gmt_create,
+            </if>
+            <if test="gmtModified != null">
+                gmt_modified,
+            </if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="vehicleModelId != null">
+                #{vehicleModelId},
+            </if>
+            <if test="vehicleOwnerName != null">
+                #{vehicleOwnerName},
+            </if>
+            <if test="vehicleOwnerTel != null">
+                #{vehicleOwnerTel},
+            </if>
+            <if test="emergencyContact != null">
+                #{emergencyContact},
+            </if>
+            <if test="emergencyContactTel != null">
+                #{emergencyContactTel},
+            </if>
+            <if test="idNumber != null">
+                #{idNumber},
+            </if>
+            <if test="plateNumber != null">
+                #{plateNumber},
+            </if>
+            <if test="carframeNumber != null">
+                #{carframeNumber},
+            </if>
+            <if test="vehicleRegisterCertificate != null">
+                #{vehicleRegisterCertificate},
+            </if>
+            <if test="purchaseDate != null">
+                #{purchaseDate},
+            </if>
+            <if test="purposeType != null">
+                #{purposeType},
+            </if>
+            <if test="purchaseDate != null">
+                #{purchaseDate},
+            </if>
+            <if test="isDeleted != null">
+                #{isDeleted},
+            </if>
+            <if test="gmtCreate != null">
+                #{gmtCreate},
+            </if>
+            <if test="gmtModified != null">
+                #{gmtModified},
+            </if>
+        </trim>
+    </insert>
+
+    <!-- 根据设备 IMEI 号获取设备安装车辆信息 -->
+    <select id="selectVehicleMsgByDeviceImei" parameterType="java.lang.String" resultMap="BaseResultMap">
+        select
+            *
+        from
+            dms_device as d
+        left join
+            dms_vehicle_msg as v
+        on
+            d.vehicle_id = v.id
+        <trim prefix="WHERE" prefixOverrides="AND">
+            <if test="deviceImei != null">
+                AND d.device_imei = #{deviceImei}
+            </if>
+        </trim>
+    </select>
+
+</mapper>

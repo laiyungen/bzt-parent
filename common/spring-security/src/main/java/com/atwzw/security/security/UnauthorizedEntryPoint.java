@@ -1,0 +1,24 @@
+package com.atwzw.security.security;
+
+import com.atwzw.commonutils.utils.ResponseUtil;
+import com.atwzw.commonutils.RestResult;
+import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.web.AuthenticationEntryPoint;
+
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+
+/**
+ * 未授权的统一处理方式
+ */
+public class UnauthorizedEntryPoint implements AuthenticationEntryPoint {
+
+    @Override
+    public void commence(HttpServletRequest request, HttpServletResponse response,
+                         AuthenticationException authException) throws IOException, ServletException {
+
+        ResponseUtil.out(response, RestResult.error().message("权限不足！请联系管理员").code(HttpServletResponse.SC_FORBIDDEN));
+    }
+}

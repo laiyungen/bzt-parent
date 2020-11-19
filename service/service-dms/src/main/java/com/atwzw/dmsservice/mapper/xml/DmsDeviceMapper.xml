@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.atwzw.dmsservice.mapper.DmsDeviceMapper">
+
+    <!-- 根据条件分页查询设备数据 -->
+    <select id="selectDmsDeviceListByCondition" parameterType="com.atwzw.dmsservice.entity.vo.DmsDeviceQueryVo" resultType="com.atwzw.dmsservice.entity.dto.DmsDeviceListDto">
+        select
+            d.device_imei deviceImei, d.device_name deviceName, d.model_name modelName, s.iccid, s.msisdn, s.activation_date activationDate,
+            d.platform_expire platformExpire, ds.device_sts deviceSts
+        from
+            dms_device as d
+        left join
+            sms_simcard as s
+        on
+            d.simcard_id = s.id
+        left join
+            dms_device_status as ds
+        on
+            d.device_imei = ds.device_imei
+        <trim prefix="WHERE" prefixOverrides="AND">
+            <if test="deviceImei != null">
+                and d.device_imei = #{deviceImei}
+            </if>
+            <if test="deviceName != null">
+                and d.device_name = #{deviceName}
+            </if>
+            <if test="modelId != null">
+                and d.model_id = #{modelId}
+            </if>
+            <if test="isPlatformExpire">
+                and d.platform_expire &lt; now()
+            </if>
+            <if test="!isPlatformExpire">
+                and d.platform_expire &gt; now()
+            </if>
+            <if test="isEardExpiry">
+                and s.card_expiry &lt; now()
+            </if>
+            <if test="!isEardExpiry">
+                and s.card_expiry &gt; now()
+            </if>
+            <if test="deviceSts != null">
+                and ds.device_sts = #{deviceSts}
+            </if>
+            <if test="startActivationDate != null">
+                and s.activation_date &lt;= #{startActivationDate}
+            </if>
+            <if test="endActivationDate != null">
+                and s.activation_date &gt;= #{endActivationDate}
+            </if>
+            <if test="userIdList != null and userIdList.size > 0">
+                d.user_id in
+                <foreach collection="userIdList" item="userId" index="index" open="(" separator="," close=")">
+                    #{userId}
+                </foreach>
+            </if>
+        </trim>
+        order by
+            gmt_create desc
+    </select>
+
+    <!-- 根据用户 ID 获取该用户下的所有设备(用户设备信息 excel 的导出) -->
+    <select id="selectDeviceListByUserIdList" parameterType="java.util.List" resultType="com.atwzw.dmsservice.entity.vo.DeviceExportVo">
+        select
+            d.device_imei deviceImei, d.device_name deviceName, d.alias_name aliasName, d.model_name modelName,
+            d.ex_factory_date exFactoryDate, d.import_time importTime, d.sale_date saleDate,
+            d.enable_date enableDate, d.platform_expire platformExpire
+        from
+            dms_device as d
+        <trim prefix="WHERE" prefixOverrides="AND">
+            <if test="userIdList != null and userIdList.size > 0">
+                d.user_id in
+                <foreach collection="userIdList" item="userId" index="index" open="(" separator="," close=")">
+                    #{userId}
+                </foreach>
+            </if>
+        </trim>
+    </select>
+
+    <!-- 根据设备 IMEI 号获取设备详情信息的结果集 -->
+    <resultMap id="DetailsBaseResultMap" type="com.atwzw.dmsservice.entity.dto.DmsDeviceDetailsDto">
+        <result column="device_imei" property="deviceImei" />
+        <result column="device_name" property="deviceName" />
+        <result column="model_id" property="modelId" />
+        <result column="purpose_type" property="purposeType" />
+        <result column="remark" property="remark" />
+        <result column="ex_factory_date" property="exFactoryDate" />
+        <result column="sale_date" property="saleDate" />
+        <result column="enable_date" property="enableDate" />
+        <result column="platform_expire" property="platformExpire" />
+    </resultMap>
+    <!-- 根据设备 IMEI 号获取设备详情信息 -->
+    <select id="selectDeviceDetailsByDeviceImei" parameterType="java.lang.String" resultMap="DetailsBaseResultMap">
+        select
+            d.device_imei, d.device_name, d.model_id, v.purpose_type, d.remark,
+            d.ex_factory_date, d.sale_date, d.enable_date, d.platform_expire
+        from
+            dms_device as d
+        left join
+            dms_vehicle_msg as v
+        on
+            d.vehicle_id = v.id
+        <trim prefix="WHERE" prefixOverrides="AND">
+            <if test="deviceImei != null">
+                AND d.device_imei = #{deviceImei}
+            </if>
+        </trim>
+    </select>
+
+</mapper>
